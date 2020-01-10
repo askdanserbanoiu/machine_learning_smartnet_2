@@ -28,24 +28,29 @@ X_test /= 255
 Y_train = np_utils.to_categorical(y_train, 10)
 Y_test = np_utils.to_categorical(y_test, 10)
 
-model = Sequential()
-model.add(Flatten())
-model.add(Dense(32, activation='relu'))
-model.add(Dense(32, activation='relu'))
-model.add(Dense(32, activation='relu'))
-model.add(Dense(32, activation='relu'))
-model.add(Dense(10, activation='softmax'))
+results = []
 
-sgd = o.SGD(lr=0.01)
+for af in ['relu', 'tanh', 'sigmoid']:
 
-model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
+    for l in [5, 20, 40]:
+    
+        model = Sequential()
+        model.add(Flatten())
 
-model.fit(X_train,Y_train, epochs=3, validation_data = (X_test, Y_test))
+        for k in range(0, l):
+        
+            model.add(Dense(32, activation=af))
 
+        model.add(Dense(10, activation='softmax'))
 
-score = model.evaluate(X_test, Y_test, verbose=0)
+        sgd = o.SGD(lr=0.01)
 
-print(score)
+        model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
 
+        model.fit(X_train,Y_train, epochs=3, validation_data = (X_test, Y_test))
 
+        score = model.evaluate(X_test, Y_test, verbose=0)
 
+        results.append([af,l, score[1]])
+
+print(results)
