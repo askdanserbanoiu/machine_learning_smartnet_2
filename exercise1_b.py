@@ -7,7 +7,6 @@ import keras.optimizers as o
 import keras.models as m
 import keras
 
-from csv import reader
 from keras.layers import Dense, Flatten
 from keras.utils import np_utils
 from keras.datasets import mnist
