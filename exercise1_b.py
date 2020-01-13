@@ -7,11 +7,13 @@ import keras.optimizers as o
 import keras.models as m
 import keras
 
+from csv import reader
 from keras.layers import Dense, Flatten
 from keras.utils import np_utils
 from keras.datasets import mnist
 from keras.models import  Sequential
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt	
+
 
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
 
