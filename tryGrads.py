@@ -10,27 +10,20 @@ from keras.datasets import mnist
 from keras.models import  Sequential
 from keras import backend as K
 
-def get_weight_grad(model, inputs, outputs):
-    grads = model.optimizer.get_gradients(model.total_loss, model.trainable_weights)
-    symb_inputs = (model._feed_inputs + model._feed_targets + model._feed_sample_weights)
-    f = K.function(symb_inputs, grads)
-    x, y, sample_weight = model._standardize_user_data(inputs, outputs)
-    output_grad = f(x + y + sample_weight)
-    return output_grad
-
-def get_max_gradient_per_layer(gradients):
-    result = []
-    for i in gradients:
-        result.append(np.max(i))
-    return result
-
 def get_gradients(model, inputs, outputs):
     grads = model.optimizer.get_gradients(model.total_loss, model.trainable_weights)
     symb_inputs = (model._feed_inputs + model._feed_targets + model._feed_sample_weights)
     f = K.function(symb_inputs, grads)
     x, y, weight = model._standardize_user_data(inputs, outputs)
     output_grad = f(x + y + weight)
-    return np.array(output_grad)
+    print(len(output_grad))
+    grads=np.array(output_grad)
+    for layer in range(len(model.layers)):
+        if model.layers[layer].__class__.__name__ == 'Dense':
+            print(grads[layer].shape)
+            max_gradient_layer_i = np.max(grads[layer])
+            print("max_gradient_layer " + str(layer) + " = " + str(max_gradient_layer_i))
+    #return np.array(output_grad)
 
 def exercise1_c(af, layers):
     
@@ -57,15 +50,19 @@ def exercise1_c(af, layers):
     model.add(Dense(10, activation='softmax'))
     
     model.compile(optimizer=o.SGD(lr=0.01), loss='categorical_crossentropy', metrics=['accuracy'])
-    model.fit(X_train,Y_train, epochs=1, validation_data = (X_test, Y_test))
+    #model.fit(X_train,Y_train, epochs=1, validation_data = (X_test, Y_test))
+    mini_batch = model.train_on_batch(X_train[0:1], Y_train[0:1])
     model.summary()
 	#max_weight_grads = get_max_gradient_per_layer(get_weight_grad(model, X_test, Y_test))
-    grads = get_gradients(model, X_train[0:1], Y_train[0:1])
-    print("shape = "+str(grads.shape))
+    #grads = get_gradients(model, X_train[0:1], Y_train[0:1])
+    get_gradients(model, X_train[0:1], Y_train[0:1])
+    #print("shape = "+str(grads.shape))
+    """
     for i,_ in enumerate(grads):
         print(grads[i].shape)
         max_gradient_layer_i = np.max(grads[i])
         print("max_gradient_layer " + str(i) + " = " + str(max_gradient_layer_i))
+    """
 		
     score = model.evaluate(X_test, Y_test, verbose=0)
 
