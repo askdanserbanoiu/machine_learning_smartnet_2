@@ -70,11 +70,10 @@ def exercise1_c(activation_functions, layers):
             model.fit(X_train,Y_train, epochs=3, validation_data = (X_test, Y_test))
 
             max_weight_grads = get_max_gradient_per_layer(get_weight_grad(model, X_test, Y_test))
-            print([max_weight_grads, max_weight_grads.__len__()])
 
             score = model.evaluate(X_test, Y_test, verbose=0)
 
-            results.append([af, layer, score[1]])
+            results.append([af, layer, score[1]], max_weight_grads)
 
     print(results)
 
