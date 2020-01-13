@@ -9,6 +9,7 @@ from keras.utils import np_utils
 from keras.datasets import mnist
 from keras.models import  Sequential
 from keras.utils.generic_utils import get_custom_objects
+from keras import backend as K
 
 
 def lecun_activation(x):

@@ -10,7 +10,6 @@ from keras.datasets import mnist
 from keras.models import  Sequential
 from keras import backend as K
 
-
 def get_weight_grad(model, inputs, outputs):
     grads = model.optimizer.get_gradients(model.total_loss, model.trainable_weights)
     symb_inputs = (model._feed_inputs + model._feed_targets + model._feed_sample_weights)
@@ -25,16 +24,15 @@ def get_max_gradient_per_layer(gradients):
         result.append(np.max(i))
     return result
 
-def get_layer_output_grad(model, inputs, outputs, layer=-1):
-    """ Gets gradient a layer output for given inputs and outputs"""
-    grads = model.optimizer.get_gradients(model.total_loss, model.layers[layer].output)
+def get_gradients(model, inputs, outputs):
+    grads = model.optimizer.get_gradients(model.total_loss, model.trainable_weights)
     symb_inputs = (model._feed_inputs + model._feed_targets + model._feed_sample_weights)
     f = K.function(symb_inputs, grads)
-    x, y, sample_weight = model._standardize_user_data(inputs, outputs)
-    output_grad = f(x + y + sample_weight)
-    return output_grad
+    x, y, weight = model._standardize_user_data(inputs, outputs)
+    output_grad = f(x + y + weight)
+    return np.array(output_grad)
 
-def exercise1_c(activation_functions, layers):
+def exercise1_c(af, layers):
     
     (X_train, y_train), (X_test, y_test) = mnist.load_data()
 
@@ -50,32 +48,30 @@ def exercise1_c(activation_functions, layers):
 
     Y_train = np_utils.to_categorical(y_train, 10)
     Y_test = np_utils.to_categorical(y_test, 10)
+    	
+    model = Sequential()
+    model.add(Flatten())
+    for n in range(0, layers):
+        model.add(Dense(32, activation=af))
+		
+    model.add(Dense(10, activation='softmax'))
+    
+    model.compile(optimizer=o.SGD(lr=0.01), loss='categorical_crossentropy', metrics=['accuracy'])
+    model.fit(X_train,Y_train, epochs=1, validation_data = (X_test, Y_test))
+    model.summary()
+	#max_weight_grads = get_max_gradient_per_layer(get_weight_grad(model, X_test, Y_test))
+    grads = get_gradients(model, X_train[0:1], Y_train[0:1])
+    print("shape = "+str(grads.shape))
+    for i,_ in enumerate(grads):
+        print(grads[i].shape)
+        max_gradient_layer_i = np.max(grads[i])
+        print("max_gradient_layer " + str(i) + " = " + str(max_gradient_layer_i))
+		
+    score = model.evaluate(X_test, Y_test, verbose=0)
 
-    results = []
+	#results.append([af, layer, score[1], len(max_weight_grads)])
 
-    for af in activation_functions:
-	
-        for layer in layers:
-			
-            model = Sequential()
-            model.add(Flatten())
+    #print(results)
 
-            for n in range(0, layer):
-                model.add(Dense(32, activation=af))
-
-            model.add(Dense(10, activation='softmax'))
-            
-            model.compile(optimizer=o.SGD(lr=0.01), loss='categorical_crossentropy', metrics=['accuracy'])
-            
-            model.fit(X_train,Y_train, epochs=3, validation_data = (X_test, Y_test))
-            #model.summary()
-			
-            max_weight_grads = get_max_gradient_per_layer(get_weight_grad(model, X_test, Y_test))
-
-            score = model.evaluate(X_test, Y_test, verbose=0)
-
-            results.append([af, layer, score[1], len(max_weight_grads)])
-
-    print(results)
-
-exercise1_c(['relu', 'tanh', 'sigmoid'], [5, 20, 40])
+#change activation function or number of layers below 
+exercise1_c('relu', 20)
