@@ -10,6 +10,33 @@ from keras.datasets import mnist
 from keras.models import  Sequential
 from keras import backend as K
 
+def print_figure(figure_name):
+    
+    figure_path = os.path.join(os.path.join(os.getcwd(), "figures"))
+    
+    if os.path.isdir(figure_path):
+        plt.savefig(os.path.join(figure_path, figure_name), quality=99)
+    else:
+        os.mkdir(figure_path)
+        plt.savefig(os.path.join(figure_path, figure_name), quality=99)
+    
+    return
+
+def get_weight_grad(model, inputs, outputs):
+    """ Gets gradient of model for given inputs and outputs for all weights"""
+    grads = model.optimizer.get_gradients(model.total_loss, model.trainable_weights)
+    symb_inputs = (model._feed_inputs + model._feed_targets + model._feed_sample_weights)
+    f = K.function(symb_inputs, grads)
+    x, y, sample_weight = model._standardize_user_data(inputs, outputs)
+    output_grad = f(x + y + sample_weight)
+    return output_grad
+
+def max_grads(grads):
+    result = []
+    for i in grads:
+        result.append(np.max(i))
+    return result
+
 
 def get_gradients(model, inputs, outputs):
     grads = model.optimizer.get_gradients(model.total_loss, model.trainable_weights)
@@ -68,13 +95,14 @@ def exercise1_c(activation_functions, layers):
             model.fit(X_train,Y_train, epochs=3, batch_size= 200, validation_data = (X_test, Y_test))
 
             X = range(layer + 1)
-            Y = get_gradients(model, X_train, Y_train)
+            Y = max_grads(get_weight_grad(model, X_train, Y_train))
 
-            axis[index].plot(X, Y)
+            axis[index].plot(X, Y, 'o')
             axis[index].set_title((str(af) + str(layer)))
 
             index = index + 1
 
+    print_figure("exercise1_c_gradients")
     plt.show()
 
 exercise1_c(['relu', 'tanh', 'sigmoid'], [5, 20, 40])
