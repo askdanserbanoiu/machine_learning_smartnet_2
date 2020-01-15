@@ -25,10 +25,10 @@ def get_gradients(model, inputs, outputs):
             l.append(layer+1)
             #print(grads[layer].shape)
             result.append(np.max(grads[layer]))
-           # print("max_gradient_layer " + str(layer) + " = " + str(result[layer-1]))
+            print("max_gradient_layer " + str(layer) + " = " + str(result[layer-1]))
     #print(result)
     _=plt.figure()
-    _=plt.plot(l,result)
+    _=plt.plot(l[0:len(l)-1],result[0:len(result)-1],'o')
     _=plt.show()
     return result
 
