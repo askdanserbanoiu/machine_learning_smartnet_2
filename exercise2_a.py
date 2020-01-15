@@ -9,9 +9,10 @@ from keras.utils import np_utils
 from keras.datasets import mnist
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
- 
+import os
 
-SVHN_directory = "train.mat"
+
+SVHN_directory = os.path.join(os.path.join(os.getcwd(), os.path.join("svhn", "train.mat")))
 # load .mat file
 data_raw = loadmat(SVHN_directory)
 data = np.array(data_raw['X'])
@@ -19,8 +20,13 @@ data = np.array(data_raw['X'])
 data = np.moveaxis(data, -1, 0)
 print(data.shape)
 plt.imshow(data[0])
+<<<<<<< HEAD
 #plt.show()
 #print(data[0])
+=======
+plt.show()
+#print(data[31][31])
+>>>>>>> 28c04e10df1ac523ec083de8e24ae437032436e7
 labels = data_raw['y']
 print(labels.shape)
 print(labels[0])

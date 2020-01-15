@@ -11,34 +11,29 @@ from keras.models import  Sequential
 from keras import backend as K
 
 
-def get_weight_grad(model, inputs, outputs):
+def get_gradients(model, inputs, outputs):
     grads = model.optimizer.get_gradients(model.total_loss, model.trainable_weights)
     symb_inputs = (model._feed_inputs + model._feed_targets + model._feed_sample_weights)
     f = K.function(symb_inputs, grads)
-    x, y, sample_weight = model._standardize_user_data(inputs, outputs)
-    output_grad = f(x + y + sample_weight)
-    return output_grad
+    x, y, weight = model._standardize_user_data(inputs, outputs)
+    output_grad = f(x + y + weight)
+    print(len(output_grad))
+    grads=np.array(output_grad)
 
-def get_max_gradient_per_layer(gradients):
     result = []
-    for i in gradients:
-        result.append(np.max(i))
+    for layer in range(len(model.layers)):
+        if model.layers[layer].__class__.__name__ == 'Dense':
+            print(grads[layer].shape)
+            result.append(np.max(grads[layer]))
+
+    print(result)
+
     return result
 
-def get_layer_output_grad(model, inputs, outputs, layer=-1):
-    """ Gets gradient a layer output for given inputs and outputs"""
-    grads = model.optimizer.get_gradients(model.total_loss, model.layers[layer].output)
-    symb_inputs = (model._feed_inputs + model._feed_targets + model._feed_sample_weights)
-    f = K.function(symb_inputs, grads)
-    x, y, sample_weight = model._standardize_user_data(inputs, outputs)
-    output_grad = f(x + y + sample_weight)
-    return output_grad
 
 def exercise1_c(activation_functions, layers):
     
     (X_train, y_train), (X_test, y_test) = mnist.load_data()
-
-    plt.imshow(X_train[0])
 
     X_train = X_train.reshape(X_train.shape[0], 1, 28, 28)
     X_test = X_test.reshape(X_test.shape[0], 1, 28, 28)
@@ -51,12 +46,15 @@ def exercise1_c(activation_functions, layers):
     Y_train = np_utils.to_categorical(y_train, 10)
     Y_test = np_utils.to_categorical(y_test, 10)
 
-    results = []
+
+    fig, ((ax1, ax2, ax3), (ax4, ax5, ax6), (ax7, ax8, ax9)) = plt.subplots(3, 3)
+    axis = [ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8, ax9]
+    index = 0
 
     for af in activation_functions:
-	
+
         for layer in layers:
-			
+        
             model = Sequential()
             model.add(Flatten())
 
@@ -64,18 +62,19 @@ def exercise1_c(activation_functions, layers):
                 model.add(Dense(32, activation=af))
 
             model.add(Dense(10, activation='softmax'))
-            
+
             model.compile(optimizer=o.SGD(lr=0.01), loss='categorical_crossentropy', metrics=['accuracy'])
-            
-            model.fit(X_train,Y_train, epochs=3, validation_data = (X_test, Y_test))
-            #model.summary()
-			
-            max_weight_grads = get_max_gradient_per_layer(get_weight_grad(model, X_test, Y_test))
 
-            score = model.evaluate(X_test, Y_test, verbose=0)
+            model.fit(X_train,Y_train, epochs=3, batch_size= 200, validation_data = (X_test, Y_test))
 
-            results.append([af, layer, score[1], len(max_weight_grads)])
+            X = range(layer + 1)
+            Y = get_gradients(model, X_train, Y_train)
 
-    print(results)
+            axis[index].plot(X, Y)
+            axis[index].set_title((str(af) + str(layer)))
+
+            index = index + 1
+
+    plt.show()
 
 exercise1_c(['relu', 'tanh', 'sigmoid'], [5, 20, 40])
