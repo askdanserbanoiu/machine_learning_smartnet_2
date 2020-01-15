@@ -19,23 +19,28 @@ data = np.array(data_raw['X'])
 data = np.moveaxis(data, -1, 0)
 print(data.shape)
 plt.imshow(data[0])
-#print(data[31][31])
+#plt.show()
+#print(data[0])
 labels = data_raw['y']
 print(labels.shape)
 print(labels[0])
 
-"""
+
 # Load pre-shuffled MNIST data into train and test sets
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
- 
+print(X_train.shape)
+#print(X_train[0])
+
 # Preprocess input data
 X_train = X_train.reshape(X_train.shape[0], 1, 28, 28)
+print(X_train.shape)
 X_test = X_test.reshape(X_test.shape[0], 1, 28, 28)
 X_train = X_train.astype('float32')
 X_test = X_test.astype('float32')
 X_train /= 255
 X_test /= 255
- 
+#print(X_train[0])
+""" 
 # Preprocess class labels
 Y_train = np_utils.to_categorical(y_train, 10)
 Y_test = np_utils.to_categorical(y_test, 10)

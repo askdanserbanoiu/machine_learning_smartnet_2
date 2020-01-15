@@ -16,14 +16,21 @@ def get_gradients(model, inputs, outputs):
     f = K.function(symb_inputs, grads)
     x, y, weight = model._standardize_user_data(inputs, outputs)
     output_grad = f(x + y + weight)
-    print(len(output_grad))
+    #print(len(output_grad))
     grads=np.array(output_grad)
+    result=[]
+    l=[]
     for layer in range(len(model.layers)):
         if model.layers[layer].__class__.__name__ == 'Dense':
-            print(grads[layer].shape)
-            max_gradient_layer_i = np.max(grads[layer])
-            print("max_gradient_layer " + str(layer) + " = " + str(max_gradient_layer_i))
-    #return np.array(output_grad)
+            l.append(layer+1)
+            #print(grads[layer].shape)
+            result.append(np.max(grads[layer]))
+           # print("max_gradient_layer " + str(layer) + " = " + str(result[layer-1]))
+    #print(result)
+    _=plt.figure()
+    _=plt.plot(l,result)
+    _=plt.show()
+    return result
 
 def exercise1_c(af, layers):
     
@@ -71,4 +78,4 @@ def exercise1_c(af, layers):
     #print(results)
 
 #change activation function or number of layers below 
-exercise1_c('relu', 20)
+exercise1_c('relu', 40)
