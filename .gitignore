@@ -1,2 +1,2 @@
-svhn/test.mat
-svhn/train.mat
+svhn/*
+digits/*
