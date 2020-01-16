@@ -48,6 +48,7 @@ def exercise1_b(activation_functions, layers):
             model.fit(X_train,Y_train, epochs=3, validation_data = (X_test, Y_test))
 
             score = model.evaluate(X_test, Y_test, verbose=0)
+            print(score)
 
             results.append([af, layer, score[1]])
 
