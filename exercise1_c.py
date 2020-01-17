@@ -22,40 +22,14 @@ def print_figure(figure_name):
     
     return
 
-def get_weight_grad(model, inputs, outputs):
-    """ Gets gradient of model for given inputs and outputs for all weights"""
-    grads = model.optimizer.get_gradients(model.total_loss, model.trainable_weights)
-    symb_inputs = (model._feed_inputs + model._feed_targets + model._feed_sample_weights)
-    f = K.function(symb_inputs, grads)
-    x, y, sample_weight = model._standardize_user_data(inputs, outputs)
-    output_grad = f(x + y + sample_weight)
-    return output_grad
-
-def max_grads(grads):
-    result = []
-    for i in grads:
-        result.append(np.max(i))
-    return result
-
-
 def get_gradients(model, inputs, outputs):
     grads = model.optimizer.get_gradients(model.total_loss, model.trainable_weights)
     symb_inputs = (model._feed_inputs + model._feed_targets + model._feed_sample_weights)
     f = K.function(symb_inputs, grads)
     x, y, weight = model._standardize_user_data(inputs, outputs)
     output_grad = f(x + y + weight)
-    print(len(output_grad))
-    grads=np.array(output_grad)
-
-    result = []
-    for layer in range(len(model.layers)):
-        if model.layers[layer].__class__.__name__ == 'Dense':
-            print(grads[layer].shape)
-            result.append(np.max(grads[layer]))
-
-    print(result)
-
-    return result
+    
+    return np.array(output_grad)
 
 
 def exercise1_c(activation_functions, layers):
@@ -73,15 +47,18 @@ def exercise1_c(activation_functions, layers):
     Y_train = np_utils.to_categorical(y_train, 10)
     Y_test = np_utils.to_categorical(y_test, 10)
 
-
-    fig, ((ax1, ax2, ax3), (ax4, ax5, ax6), (ax7, ax8, ax9)) = plt.subplots(3, 3)
-    axis = [ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8, ax9]
-    index = 0
-
+    fig,(ax1, ax2, ax3) = plt.subplots(1,3)
+    fig.suptitle('layer depth vs. max gradient')
+    axis=[ax1, ax2, ax3]
+    
+    index=0
+    
     for af in activation_functions:
-
+      
         for layer in layers:
-        
+            
+            print("Model : " + str(af) + " - " + str(layer) + " layers")
+			
             model = Sequential()
             model.add(Flatten())
 
@@ -91,16 +68,33 @@ def exercise1_c(activation_functions, layers):
             model.add(Dense(10, activation='softmax'))
 
             model.compile(optimizer=o.SGD(lr=0.01), loss='categorical_crossentropy', metrics=['accuracy'])
+			
+            model.fit(X_train,Y_train, epochs=3, batch_size= 64)
+            
+            grads = get_gradients(model, X_train, Y_train)
 
-            model.fit(X_train,Y_train, epochs=3, batch_size= 200, validation_data = (X_test, Y_test))
+            max_gradient_layer=[]
+            
+            for i,_ in enumerate(grads):
+                if(i%2==0):
+                    max_gradient_layer.append(np.max(grads[i]))
 
-            X = range(layer + 1)
-            Y = max_grads(get_weight_grad(model, X_train, Y_train))
+            score = model.evaluate(X_test, Y_test, verbose=0)
+            
+            depth=range(1,layer+1)
+            
+            l=str(af)+' , acc.='+str("%.3f" %score[1])
+            
+            axis[index].plot(depth, max_gradient_layer[0:len( max_gradient_layer)-1],'o',label=l)
+            
+            axis[index].set_title(str(layer)+" layers")
+            
+            axis[index].legend(fontsize='small')
+            
+            index+=1
+            
+        index=0
 
-            axis[index].plot(X, Y, 'o')
-            axis[index].set_title((str(af) + str(layer)))
-
-            index = index + 1
 
     print_figure("exercise1_c_gradients")
     plt.show()
