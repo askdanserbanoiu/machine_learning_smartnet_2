@@ -21,6 +21,12 @@ def d_relu(x):
     if(x>0): return 1
     else: return 0
 	
+def LeCun(x):
+    return (1.7159*tanh((2/3)*x)+0.01*x)
+	
+def d_LeCun(x):
+   return (1.7159*d_tanh(x)*(2/3)+0.01)
+   
 def values_of(function,x):
     f = np.vectorize(function) 
     y = f(x)
@@ -50,6 +56,11 @@ axs[1,1].axis([-5,5,-0.1,2])
 axs[1,1].plot(0,0, 'o', color='darkorange', markerfacecolor='white')
 axs[1,1].plot(0,1, 'o', color='darkorange', markerfacecolor='white')
 axs[1,1].set_title("Derivative of relu")	
+
+_=plt.figure(5)
+_=plt.plot(x, values_of(LeCun,x),label="LeCun(x)" )
+_=plt.plot(x, values_of(d_LeCun,x),label="LeCun\'(x)" )
+_=plt.legend()
 
 _=plt.show()
 
