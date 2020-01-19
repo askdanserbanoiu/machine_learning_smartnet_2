@@ -18,42 +18,36 @@ data_raw = loadmat(SVHN_directory)
 data = np.array(data_raw['X'])
 # make correct shape
 data = np.moveaxis(data, -1, 0)
-print(data.shape)
-plt.imshow(data[0])
-<<<<<<< HEAD
+#print(data.shape)
+#plt.imshow(data[2])
+
 #plt.show()
 #print(data[0])
-=======
+
 plt.show()
-#print(data[31][31])
->>>>>>> 28c04e10df1ac523ec083de8e24ae437032436e7
+
 labels = data_raw['y']
-print(labels.shape)
-print(labels[0])
 
+#print(int(labels[2]))
 
-# Load pre-shuffled MNIST data into train and test sets
-(X_train, y_train), (X_test, y_test) = mnist.load_data()
-print(X_train.shape)
-#print(X_train[0])
+x_train=data
+y_train=labels
 
 # Preprocess input data
-X_train = X_train.reshape(X_train.shape[0], 1, 28, 28)
-print(X_train.shape)
-X_test = X_test.reshape(X_test.shape[0], 1, 28, 28)
-X_train = X_train.astype('float32')
-X_test = X_test.astype('float32')
+
+X_train = x_train.astype('float32')
+
 X_train /= 255
-X_test /= 255
-#print(X_train[0])
-""" 
+
+#print(X_train[2])
+
 # Preprocess class labels
-Y_train = np_utils.to_categorical(y_train, 10)
-Y_test = np_utils.to_categorical(y_test, 10)
+Y_train = np_utils.to_categorical(y_train.reshape([-1, 1])) # need of understanding how reshape([-1, 1]) works
+print(Y_train[2])
  
 # Define model architecture
 model = Sequential()
-"""
+
 
 """
 Because of error:
@@ -63,8 +57,8 @@ ValueError: Negative dimension size caused by subtracting 3 from 1 for
 --------------------------------------------------------------------------------
  input_shape=(1,28,28),data_format='channels_first' is added
 """
-"""
-model.add(Convolution2D(9, (3, 3), padding='same', activation='relu', input_shape=(1,28,28),data_format='channels_first'))
+
+model.add(Convolution2D(9, (3, 3), padding='same', activation='relu', input_shape=(32,32,3),data_format='channels_first'))
 model.add(MaxPooling2D(pool_size=(3,3)))
 model.add(Convolution2D(36, (3, 3), padding='same', activation='relu',  data_format='channels_first'))
 model.add(MaxPooling2D(pool_size=(3,3)))
@@ -74,7 +68,7 @@ model.add(MaxPooling2D(pool_size=(3,3)))
 model.add(Flatten())
 model.add(Dense(128, activation='relu'))
 model.add(Dropout(0.5))
-model.add(Dense(10, activation='relu'))
+model.add(Dense(11, activation='relu'))
  
 # Compile model
 model.compile(loss='categorical_crossentropy',
@@ -86,5 +80,4 @@ model.fit(X_train, Y_train,
           batch_size=32, nb_epoch=2, verbose=1)
  
 # Evaluate model on test data
-score = model.evaluate(X_test, Y_test, verbose=0)
-"""
+#score = model.evaluate(X_test, Y_test, verbose=0)
