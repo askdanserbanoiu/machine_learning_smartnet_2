@@ -16,19 +16,23 @@ SVHN_directory = os.path.join(os.path.join(os.getcwd(), os.path.join("svhn", "tr
 # load .mat file
 data_raw = loadmat(SVHN_directory)
 data = np.array(data_raw['X'])
+#print(data.shape)
+
 # make correct shape
 data = np.moveaxis(data, -1, 0)
 #print(data.shape)
-#plt.imshow(data[2])
-
-#plt.show()
-#print(data[0])
+"""
+for i in range(50,54):
+    plt.imshow(data[i])
+    plt.show()
+"""
+#print(data[0:20])
 
 plt.show()
 
 labels = data_raw['y']
 
-#print(int(labels[2]))
+#print(int(labels[50:54]))
 
 x_train=data
 y_train=labels
@@ -39,11 +43,11 @@ X_train = x_train.astype('float32')
 
 X_train /= 255
 
-#print(X_train[2])
+print(y_train.reshape([-1, 1])[50:54])
 
 # Preprocess class labels
 Y_train = np_utils.to_categorical(y_train.reshape([-1, 1])) # need of understanding how reshape([-1, 1]) works
-print(Y_train[2])
+print(Y_train[50:54])
  
 # Define model architecture
 model = Sequential()
