@@ -50,7 +50,7 @@ def exercise1_c(activation_functions, layers):
     X_test = X_test.astype('float32')
     X_train /= 255
     X_test /= 255
-
+    
     Y_train = np_utils.to_categorical(y_train, 10)
     Y_test = np_utils.to_categorical(y_test, 10)
     
@@ -73,9 +73,9 @@ def exercise1_c(activation_functions, layers):
             
             max_grad_per_layer = max_gradients(get_gradients(model, X_train, Y_train))
 
-            score = model.evaluate(X_test, Y_test, verbose=0)
+            score, acc = model.evaluate(X_test, Y_test, verbose=0)
                         
-            l=str(af)+' , accuracy='+str("%.3f" %score[1])
+            l=str(af)+' , accuracy='+str("%.3f" %acc)
 
             plt.plot(range(1, layer + 2), max_grad_per_layer, 'o', label=l)
                         

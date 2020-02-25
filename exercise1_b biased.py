@@ -9,6 +9,7 @@ from keras.utils import np_utils
 from keras.datasets import mnist
 from keras.models import  Sequential
 
+#biased because test data is used as validation set. When testing occurs accuracy appears higher than it actually is
 
 def exercise1_b(activation_functions, layers):
     
@@ -23,13 +24,6 @@ def exercise1_b(activation_functions, layers):
     X_test /= 255
 
     Y_train = np_utils.to_categorical(y_train, 10)
-    Y_test = np_utils.to_categorical(y_test, 10)
-
-    X_train_train = X_train[0:5500]
-    X_validate = X_train[5500:6000]
-    Y_train_train = Y_train[0:5500]
-    Y_validate = Y_train[5500:6000]
-
     Y_test = np_utils.to_categorical(y_test, 10)
 
     results = []
@@ -48,7 +42,7 @@ def exercise1_b(activation_functions, layers):
 
             model.compile(optimizer=o.SGD(lr=0.01), loss='categorical_crossentropy', metrics=['accuracy'])
 
-            model.fit(X_train_train, Y_train_train, epochs=3, validation_data = (X_validate, Y_validate))
+            model.fit(X_train, Y_train, epochs=3, validation_data = (X_test, Y_test))
 
             score, acc = model.evaluate(X_test, Y_test, verbose=0)
 
