@@ -59,10 +59,10 @@ def exercise1_d(activation_functions, layers):
     Y_train = np_utils.to_categorical(y_train, 10)
     Y_test = np_utils.to_categorical(y_test, 10)
 
-    X_train_train = X_train[0:5500]
-    X_validate = X_train[5500:6000]
-    Y_train_train = Y_train[0:5500]
-    Y_validate = Y_train[5500:6000]
+    X_train_train = X_train[0:55000]
+    X_validate = X_train[55000:60000]
+    Y_train_train = Y_train[0:55000]
+    Y_validate = Y_train[55000:60000]
     
     results = []
 
