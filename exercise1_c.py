@@ -26,11 +26,18 @@ def get_gradients(model, inputs, outputs):
     grads = model.optimizer.get_gradients(model.total_loss, model.trainable_weights)
     symb_inputs = (model._feed_inputs + model._feed_targets + model._feed_sample_weights)
     f = K.function(symb_inputs, grads)
-    x, y, weight = model._standardize_user_data(inputs, outputs)
-    output_grad = f(x + y + weight)
-    
-    return np.array(output_grad)
+    x, y, sample_weight = model._standardize_user_data(inputs, outputs)
+    output_grad = f(x + y + sample_weight)
+    return output_grad
 
+def max_gradients(gradients):
+    max_grad_per_layer = []                    
+    for i in range(0, len(gradients), 2):
+        max_grad_per_layer.append(np.max([np.max(gradients[i]), np.max(gradients[i+1])]))
+    return max_grad_per_layer
+
+def column(matrix, i):
+    return [row[i] for row in matrix]
 
 def exercise1_c(activation_functions, layers):
     
@@ -46,23 +53,16 @@ def exercise1_c(activation_functions, layers):
 
     Y_train = np_utils.to_categorical(y_train, 10)
     Y_test = np_utils.to_categorical(y_test, 10)
-
-    fig,(ax1, ax2, ax3) = plt.subplots(1,3)
-    fig.suptitle('layer depth vs. max gradient')
-    axis=[ax1, ax2, ax3]
     
-    index=0
-    
-    for af in activation_functions:
       
-        for layer in layers:
-            
-            print("Model : " + str(af) + " - " + str(layer) + " layers")
-			
+    for layer in layers:
+
+        for af in activation_functions:
+        			
             model = Sequential()
             model.add(Flatten())
 
-            for n in range(0, layer):
+            for i in range(0, layer):
                 model.add(Dense(32, activation=af))
 
             model.add(Dense(10, activation='softmax'))
@@ -71,32 +71,19 @@ def exercise1_c(activation_functions, layers):
 			
             model.fit(X_train,Y_train, epochs=3, batch_size= 64)
             
-            grads = get_gradients(model, X_train, Y_train)
-
-            max_gradient_layer=[]
-            
-            for i,_ in enumerate(grads):
-                if(i%2==0):
-                    max_gradient_layer.append(np.max(grads[i]))
+            max_grad_per_layer = max_gradients(get_gradients(model, X_train, Y_train))
 
             score = model.evaluate(X_test, Y_test, verbose=0)
-            
-            depth=range(1,layer+1)
-            
-            l=str(af)+' , acc.='+str("%.3f" %score[1])
-            
-            axis[index].plot(depth, max_gradient_layer[0:len( max_gradient_layer)-1],'o',label=l)
-            
-            axis[index].set_title(str(layer)+" layers")
-            
-            axis[index].legend(fontsize='small')
-            
-            index+=1
-            
-        index=0
+                        
+            l=str(af)+' , accuracy='+str("%.3f" %score[1])
 
+            plt.plot(range(1, layer + 2), max_grad_per_layer, 'o', label=l)
+                        
+            
+        plt.title("Max gradients per layer for " + str(layer + 1) + " layers")
+        plt.legend(fontsize='small')
+        print_figure("exercise1_c_gradients_" + str(layer + 1)) 
+        plt.figure()  
 
-    print_figure("exercise1_c_gradients")
-    plt.show()
 
 exercise1_c(['relu', 'tanh', 'sigmoid'], [5, 20, 40])
