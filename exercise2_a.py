@@ -9,29 +9,22 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten, Convolution2D, MaxPooling2D
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 
-def one_hot_encoder(y):  
+def encoder(y):  
     y = (np.arange(10) == y[:, np.newaxis]).astype(np.float32)
     return y
-
-def change_dim_x(x_data):
-    new_x = (x_data.transpose(3, 0, 1, 2)/255).astype(np.float32)
-    return new_x
-
 
 train_data = sio.loadmat(os.path.join(os.path.join(os.getcwd(), "svhn"), 'train.mat'))
 test_data = sio.loadmat(os.path.join(os.path.join(os.getcwd(), "svhn"), 'test.mat'))
 
-x_train = train_data['X']
-y_train = train_data['y']
+X_train = train_data['X']
+Y_train = train_data['y']
+X_test = test_data['X']
+Y_test = test_data['y']
 
-x_test = test_data['X']
-y_test = test_data['y']
-
-x_train = change_dim_x(x_train)
-x_test = change_dim_x(x_test)
-
-y_train = one_hot_encoder(y_train.flatten())
-y_test = one_hot_encoder(y_test.flatten())
+X_train = (X_train.transpose(3, 0, 1, 2)/255).astype(np.float32)
+X_test = (X_test.transpose(3, 0, 1, 2)/255).astype(np.float32)
+Y_train = encoder(Y_train.flatten())
+Y_test = encoder(Y_test.flatten())
 
 model = models.Sequential()
 
@@ -51,9 +44,9 @@ model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accur
 callbacks = [EarlyStopping(monitor='val_loss', min_delta=0, patience=1, verbose=0, mode='auto'),
              ModelCheckpoint(filepath='exercise2_a.h5', monitor='val_loss', save_best_only=True)]
 
-model.fit(x_train, y_train, validation_data=(x_test, y_test), callbacks=callbacks, batch_size=500, epochs=10)
+model.fit(X_train, Y_train, validation_data=(X_test, Y_test), callbacks=callbacks, batch_size=500, epochs=10)
 
-score, acc = model.evaluate(x_test, y_test, verbose=0)
+score, acc = model.evaluate(X_test, Y_test, verbose=0)
 
 #plt.figure(figsize=(12, 8))
 #cm = confusion_matrix(y_true=np.argmax(y_test, axis=1), y_pred=flat_array)
