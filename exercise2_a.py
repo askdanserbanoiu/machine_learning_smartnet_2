@@ -1,66 +1,39 @@
-# Import libraries and modules
-import numpy as np
-np.random.seed(123)  # for reproducibility
- 
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten
-from keras.layers import Convolution2D, MaxPooling2D
-from keras.utils import np_utils
-from keras.datasets import mnist
-from scipy.io import loadmat
-import matplotlib.pyplot as plt
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy.io as sio
+from keras import layers
+from keras import models
+from keras.models import Sequential
+from keras.layers import Dense, Dropout, Activation, Flatten, Convolution2D, MaxPooling2D
+from keras.callbacks import EarlyStopping, ModelCheckpoint
+
+def one_hot_encoder(y):  
+    y = (np.arange(10) == y[:, np.newaxis]).astype(np.float32)
+    return y
+
+def change_dim_x(x_data):
+    new_x = (x_data.transpose(3, 0, 1, 2)/255).astype(np.float32)
+    return new_x
 
 
-SVHN_directory = os.path.join(os.path.join(os.getcwd(), os.path.join("svhn", "train.mat")))
-# load .mat file
-data_raw = loadmat(SVHN_directory)
-data = np.array(data_raw['X'])
-#print(data.shape)
+train_data = sio.loadmat(os.path.join(os.path.join(os.getcwd(), "svhn"), 'train.mat'))
+test_data = sio.loadmat(os.path.join(os.path.join(os.getcwd(), "svhn"), 'test.mat'))
 
-# make correct shape
-data = np.moveaxis(data, -1, 0)
-#print(data.shape)
-"""
-for i in range(50,54):
-    plt.imshow(data[i])
-    plt.show()
-"""
-#print(data[0:20])
+x_train = train_data['X']
+y_train = train_data['y']
 
-plt.show()
+x_test = test_data['X']
+y_test = test_data['y']
 
-labels = data_raw['y']
+x_train = change_dim_x(x_train)
+x_test = change_dim_x(x_test)
 
-#print(int(labels[50:54]))
+y_train = one_hot_encoder(y_train.flatten())
+y_test = one_hot_encoder(y_test.flatten())
 
-x_train=data
-y_train=labels
-
-# Preprocess input data
-
-X_train = x_train.astype('float32')
-
-X_train /= 255
-
-print(y_train.reshape([-1, 1])[50:54])
-
-# Preprocess class labels
-Y_train = np_utils.to_categorical(y_train.reshape([-1, 1])) # need of understanding how reshape([-1, 1]) works
-print(Y_train[50:54])
- 
-# Define model architecture
-model = Sequential()
-
-
-"""
-Because of error:
--------------------------------------------------------------------------------- 
-ValueError: Negative dimension size caused by subtracting 3 from 1 for 
-'conv2d_2/convolution' (op: 'Conv2D') with input shapes: [?,1,28,28],[3,3,28,32].
---------------------------------------------------------------------------------
- input_shape=(1,28,28),data_format='channels_first' is added
-"""
+model = models.Sequential()
 
 model.add(Convolution2D(9, (3, 3), padding='same', activation='relu', input_shape=(32,32,3),data_format='channels_first'))
 model.add(MaxPooling2D(pool_size=(3,3)))
@@ -70,18 +43,20 @@ model.add(Convolution2D(49, (3, 3), padding='same', activation='relu',data_forma
 model.add(MaxPooling2D(pool_size=(3,3)))
  
 model.add(Flatten())
-model.add(Dense(128, activation='relu'))
-model.add(Dropout(0.5))
-model.add(Dense(11, activation='relu'))
- 
-# Compile model
-model.compile(loss='categorical_crossentropy',
-              optimizer='adam',
-              metrics=['accuracy'])
- 
-# Fit model on training data
-model.fit(X_train, Y_train, 
-          batch_size=32, nb_epoch=2, verbose=1)
- 
-# Evaluate model on test data
-#score = model.evaluate(X_test, Y_test, verbose=0)
+model.add(Dense(512, activation='relu'))
+model.add(Dropout(0.2))
+model.add(Dense(10, activation='softmax'))
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+callbacks = [EarlyStopping(monitor='val_loss', min_delta=0, patience=1, verbose=0, mode='auto'),
+             ModelCheckpoint(filepath='exercise2_a.h5', monitor='val_loss', save_best_only=True)]
+
+model.fit(x_train, y_train, validation_data=(x_test, y_test), callbacks=callbacks, batch_size=500, epochs=10)
+
+score, acc = model.evaluate(x_test, y_test, verbose=0)
+
+#plt.figure(figsize=(12, 8))
+#cm = confusion_matrix(y_true=np.argmax(y_test, axis=1), y_pred=flat_array)
+#cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis] * 100.0
+#sns.heatmap(cm, annot=True, cmap='Reds', fmt='.1f', square=True);
+print(acc)
