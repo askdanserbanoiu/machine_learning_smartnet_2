@@ -3,13 +3,8 @@
         For 2nd assignment click here: <a href="project.pdf">Assignment</a>.</p>
     </embed>
 </object>
-<object data="help.pdf" type="application/pdf" width="700px" height="700px">
-    <embed src="help.pdf">
-        For help and instructions: <a href="help.pdf">Help</a>.</p>
-    </embed>
-</object>
-<object data="thebest.pdf" type="application/pdf" width="700px" height="700px">
-    <embed src="thebest.pdf">
-        To be the best we implement: <a href="thebest.pdf">The Best</a>.</p>
+<object data="hybrid_CNN–SVM_classifier.pdf" type="application/pdf" width="700px" height="700px">
+    <embed src="hybrid_CNN–SVM_classifier.pdf">
+        The exercise 3 was implemented based on this paper: <a href="hybrid_CNN–SVM_classifier.pdf">CCN SVM Classifier</a>.</p>
     </embed>
 </object>
