@@ -62,10 +62,8 @@ def plot_layer_outputs(img, model, layer_number):
 
 
 def exercise2_b():   
-
-
-    train_data = sio.loadmat(os.path.join(os.path.join(os.getcwd(), "svhn"), 'train.mat'))
-    test_data = sio.loadmat(os.path.join(os.path.join(os.getcwd(), "svhn"), 'test.mat'))
+    train_data = sio.loadmat(os.path.join(os.path.join(os.getcwd(), "svhn"), 'train_32x32.mat'))
+    test_data = sio.loadmat(os.path.join(os.path.join(os.getcwd(), "svhn"), 'test_32x32.mat'))
 
     X_train = train_data['X']
     Y_train = train_data['y']

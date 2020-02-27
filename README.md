@@ -8,3 +8,8 @@
         The exercise 3 was implemented based on this paper: <a href="hybrid_CNN–SVM_classifier.pdf">CCN SVM Classifier</a>.</p>
     </embed>
 </object>
+<object type="application/pdf" width="700px" height="700px">
+    <embed>
+        Manually download from <a href="http://ufldl.stanford.edu/housenumbers/">http://ufldl.stanford.edu/housenumbers/</a> train_32x32.mat and test_32x32.mat and put them into a svhn folder</p>
+    </embed>
+</object>
