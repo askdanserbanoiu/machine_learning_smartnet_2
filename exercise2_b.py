@@ -11,6 +11,9 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten, Convolution2D, MaxPooling2D
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras import backend as K
+from keras.models import Model
+from keract import get_activations
+import keract
 
 def shuffle_in_unison(a, b):
     assert len(a) == len(b)
@@ -22,46 +25,18 @@ def shuffle_in_unison(a, b):
         shuffled_b[new_index] = b[old_index]
     return shuffled_a, shuffled_b
 
-def get_layer_outputs(img, model):
-    test_image = img
-    outputs    = [layer.output for layer in model.layers]          # all layer outputs
-    comp_graph = [K.function([model.input]+ [K.learning_phase()], [output]) for output in outputs]  # evaluation functions
+def print_convolution_outputs(model, X_test, indexes):
+    for i in indexes:
+        activations1 = get_activations(model, X_test[i].reshape(1, 32, 32, 3), layer_name="conv1", auto_compile=True)
+        activations2 = get_activations(model, X_test[i].reshape(1, 32, 32, 3), layer_name="conv2", auto_compile=True)
+        activations3 = get_activations(model, X_test[i].reshape(1, 32, 32, 3), layer_name="conv3", auto_compile=True)
 
-    # Testing
-    layer_outputs_list = [op([test_image, 1.]) for op in comp_graph]
-    layer_outputs = []
-
-    for layer_output in layer_outputs_list:
-        print(layer_output[0][0].shape, end='\n-------------------\n')
-        layer_outputs.append(layer_output[0][0])
-
-    return layer_outputs
-
-
-def plot_layer_outputs(img, model, layer_number):    
-    layer_outputs = get_layer_outputs(img, model)
-
-    x_max = layer_outputs[layer_number].shape[0]
-    y_max = layer_outputs[layer_number].shape[1]
-    n     = layer_outputs[layer_number].shape[2]
-
-    L = []
-    for i in range(n):
-        L.append(np.zeros((x_max, y_max)))
-
-    for i in range(n):
-        for x in range(x_max):
-            for y in range(y_max):
-                L[i][x][y] = layer_outputs[layer_number][x][y][i]
-
-
-    for img in L:
-        plt.figure()
-        plt.imshow(img, interpolation='nearest')
-
-
+        keract.display_activations(activations1, cmap=None, save=True, directory='./figures/exercise2_b_'+str(i)+'output')
+        keract.display_activations(activations2, cmap=None, save=True, directory='./figures/exercise2_b_'+str(i)+'output')
+        keract.display_activations(activations3, cmap=None, save=True, directory='./figures/exercise2_b_'+str(i)+'output')
 
 def exercise2_b():   
+
     train_data = sio.loadmat(os.path.join(os.path.join(os.getcwd(), "svhn"), 'train_32x32.mat'))
     test_data = sio.loadmat(os.path.join(os.path.join(os.getcwd(), "svhn"), 'test_32x32.mat'))
 
@@ -70,12 +45,14 @@ def exercise2_b():
     Y_train[Y_train == 10] = 0
 
     X_test = test_data['X']
+
     Y_test = test_data['y']
     Y_test[Y_test == 10] = 0
 
-
     X_train = (X_train.transpose(3, 0, 1, 2)/255).astype(np.float32)
-    X_test = (X_test.transpose(3, 0, 1, 2)/255).astype(np.float32)
+    X_test = X_test.transpose(3, 0, 1, 2)
+
+    X_test = (X_test/255).astype(np.float32)
 
     Y_train = keras.utils.to_categorical(Y_train.flatten(), 10)
     Y_test = Y_test.flatten()
@@ -90,11 +67,11 @@ def exercise2_b():
 
     model = models.Sequential()
 
-    model.add(Convolution2D(9, (3, 3), padding='same', activation='relu', input_shape=(32,32,3),data_format='channels_first'))
+    model.add(Convolution2D(9, (3, 3), name="conv1", padding='same', activation='relu', input_shape=(32,32,3)))
     model.add(MaxPooling2D(pool_size=(3,3)))
-    model.add(Convolution2D(36, (3, 3), padding='same', activation='relu',  data_format='channels_first'))
+    model.add(Convolution2D(36, (3, 3), name="conv2", padding='same', activation='relu'))
     model.add(MaxPooling2D(pool_size=(3,3)))
-    model.add(Convolution2D(49, (3, 3), padding='same', activation='relu',data_format='channels_first'))
+    model.add(Convolution2D(49, (3, 3), name="conv3", padding='same', activation='relu'))
     model.add(MaxPooling2D(pool_size=(3,3)))
     
     model.add(Flatten())
@@ -108,7 +85,8 @@ def exercise2_b():
 
     model.fit(X_train_train, Y_train_train, validation_data=(X_validation, Y_validation), callbacks=callbacks, batch_size=500, epochs=20)
 
-    Y_pred = model.predict(X_test, verbose=0).argmax(axis=-1)
+    print_convolution_outputs(model, X_test, [0,1,2])
+
 
 exercise2_b()
 

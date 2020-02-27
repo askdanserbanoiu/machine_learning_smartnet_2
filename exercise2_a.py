@@ -45,6 +45,26 @@ def compute_confusion_matrix(true, pred):
                 cf_matrix[i][j] = (cf_matrix[i][j]/np.amax(cf_matrix))*100
   return cf_matrix
 
+def plot_loss_accuracy(history):
+    acc = history.history['accuracy']
+    val_acc = history.history['val_accuracy']
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
+    epochs = range(1, len(acc) + 1)
+    plt.plot(epochs, acc, 'bo', label='Training acc')
+    plt.plot(epochs, val_acc, 'b', label='Validation acc')
+    plt.title('Training and validation accuracy')
+    plt.legend()
+    print_figure("exercise2_a_accuracy") 
+    plt.figure()
+    plt.plot(epochs, loss, 'bo', label='Training loss')
+    plt.plot(epochs, val_loss, 'b', label='Validation loss')
+    plt.title('Training and validation loss')
+    plt.legend()
+    print_figure("exercise2_a_loss") 
+    plt.figure()  
+
+
 def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
     plt_cm = np.array(cm)    
     plt.imshow(plt_cm, interpolation='nearest', cmap=cmap)
@@ -63,7 +83,7 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     plt.xlabel('Predicted Classes')
     plt.legend(fontsize='small')
     plt.gcf().subplots_adjust(bottom=0.15)
-    print_figure("exercise2_a") 
+    print_figure("exercise2_a_confusion") 
 
 
 def exercise2_a():   
@@ -111,7 +131,9 @@ def exercise2_a():
   callbacks = [EarlyStopping(monitor='val_loss', min_delta=0, patience=1, verbose=0, mode='auto'),
               ModelCheckpoint(filepath='exercise2_a.h5', monitor='val_loss', save_best_only=True)]
 
-  model.fit(X_train_train, Y_train_train, validation_data=(X_validation, Y_validation), callbacks=callbacks, batch_size=500, epochs=3)
+  history = model.fit(X_train_train, Y_train_train, validation_data=(X_validation, Y_validation), callbacks=callbacks, batch_size=500, epochs=20)
+
+  plot_loss_accuracy(history)
 
   Y_pred = model.predict(X_test, verbose=0).argmax(axis=-1)
 
