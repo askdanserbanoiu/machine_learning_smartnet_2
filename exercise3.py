@@ -12,8 +12,30 @@ import matplotlib.pyplot as plt
 from keras import backend as K
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.preprocessing.image import ImageDataGenerator
+import glob
+import cv2
+
+
+def import_test_custom(n):
+    image_list = []
+    labels = []
+    for i in n:
+        f = 0
+        for filename in glob.glob('exercise3/'+str(i)+'/*.png'): 
+            file = cv2.imread(filename)
+            file = cv2.resize(file, (28, 28))
+            file = cv2.cvtColor(file, cv2.COLOR_BGR2GRAY)
+            file = file.reshape((28, 28,1))
+            image_list.append(file)
+            f = f + 1
+        labels.extend([i]*f)
+    return image_list, labels
 
 def exercise3():
+
+    images, labels = import_test_custom(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
+    labels = np_utils.to_categorical(labels, 10)
+
 
     (X_train, y_train), (X_test, y_test) = mnist.load_data()
 
@@ -59,7 +81,7 @@ def exercise3():
 
     model.compile(loss=keras.losses.hinge, optimizer=keras.optimizers.Adadelta(), metrics=['accuracy'])
     model.fit(X_train_train, Y_train_train, epochs=20, verbose=1, callbacks=callbacks, validation_data=(X_validate, Y_validate))
-    score = model.evaluate(X_test, Y_test, verbose=0)
+    score = model.evaluate(np.array(images), np.array(labels), verbose=0)
     print('Test loss:', score[0])
     print('Test accuracy:', score[1])
 
