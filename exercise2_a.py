@@ -42,7 +42,7 @@ def compute_confusion_matrix(true, pred):
     cf_matrix[true[i]][pred[i]] += 1
   for i in range(len(cf_matrix)):
         for j in range(len(cf_matrix[i])):
-                cf_matrix[i][j] = (cf_matrix[i][j]/np.amax(cf_matrix))*100
+                cf_matrix[i][j] = (cf_matrix[i][j]/np.amax(cf_matrix))
   return cf_matrix
 
 def plot_loss_accuracy(history):
